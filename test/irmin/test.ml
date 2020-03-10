@@ -1166,8 +1166,6 @@ let test_variants () =
   test (`X259 1024);
   test (`X259 (1024 * 1024))
 
-type dummy_record = { a : int; b : int }
-
 (* Test that reusing the same name for different fields raises. *)
 let test_duplicate_names () =
   let open Irmin.Type in
@@ -1212,6 +1210,32 @@ let test_duplicate_names () =
        "The name Foo was used for two or more case0 in variant or enum bar.")
     (fun () -> ignore (enum "bar" [ ("Foo", `A); ("Foo", `B) ]))
 
+(* Test that using malformed UTF-8 in field and case names raises. *)
+let test_malformed_utf8 () =
+  Alcotest.check_raises "Malformed UTF-8 in field name"
+    (Invalid_argument "Malformed UTF-8") (fun () ->
+      let open Irmin.Type in
+      ignore
+        ( record "foo" (fun a b -> { a; b })
+        |+ field "a" int (fun r -> r.a)
+        |+ field "\128\255\255\r\012\247" int (fun r -> r.b) ));
+  Alcotest.check_raises "Malformed UTF-8 in case0 name"
+    (Invalid_argument "Malformed UTF-8") (fun () ->
+      let open Irmin.Type in
+      ignore
+        ( variant "foo" (fun a -> function `A -> a)
+        |~ case0 "\128\255\255\r\012\247" `A ));
+  Alcotest.check_raises "Malformed UTF-8 in case1 name"
+    (Invalid_argument "Malformed UTF-8") (fun () ->
+      let open Irmin.Type in
+      ignore
+        ( variant "foo" (fun a -> function `A i -> a i)
+        |~ case1 "\128\255\255\r\012\247" int (fun i -> `A i) ));
+  Alcotest.check_raises "Malformed UTF-8 in enum tag name"
+    (Invalid_argument "Malformed UTF-8") (fun () ->
+      let open Irmin.Type in
+      ignore (enum "foo" [ ("\128\255\255\r\012\247", `A) ]))
+
 let suite =
   [
     ( "type",
@@ -1228,6 +1252,7 @@ let suite =
         ("test_hashes", `Quick, test_hashes);
         ("test_variants", `Quick, test_variants);
         ("test_duplicate_names", `Quick, test_duplicate_names);
+        ("test_malformed_utf8", `Quick, test_malformed_utf8);
       ] );
   ]
 

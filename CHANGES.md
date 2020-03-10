@@ -4,7 +4,7 @@
 
 - **irmin**:
   - Add sanity checks when creating `Irmin.Type` records, variants and enums
-    (#956, @liautaud):
+    (#956 and #966, @liautaud):
      - `Irmin.Type.sealr` will now raise `Invalid_argument` if two fields of
        the record have the same name;
      - `Irmin.Type.sealv` will now raise `Invalid_argument` if two cases of
@@ -18,6 +18,15 @@
     - `Some x` is now encoded as `{"some": x}`;
     - Fields of records which have value `None` are still omitted;
     - Fields of records which have value `Some x` are still unboxed into `x`.
+       the enum have the same name;
+     - `Irmin.Type.field` will now raise `Invalid_argument` if the name of
+       the field is not a valid UTF-8 string.
+     - `Irmin.Type.case0` will now raise `Invalid_argument` if the name of
+       the case is not a valid UTF-8 string.
+     - `Irmin.Type.case1` will now raise `Invalid_argument` if the name of
+       the case is not a valid UTF-8 string.
+     - `Irmin.Type.enum` will now raise `Invalid_argument` if the name of
+       any of the tags is not a valid UTF-8 string.
 
 ### 2.1.0 (2020-02-01)
 

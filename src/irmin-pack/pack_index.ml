@@ -29,13 +29,16 @@ module Make (K : Irmin.Hash.S) = struct
   end
 
   module Val = struct
-    type t = int64 * int * char [@@deriving irmin]
+    type t = Int63.t * int * char
+
+    let int63 = Irmin.Type.(map int64) Int63.of_int64 Int63.to_int64
+    let t = Irmin.Type.(triple int63 int char)
 
     let to_bin_string =
-      Irmin.Type.(unstage (to_bin_string (triple int64 int32 char)))
+      Irmin.Type.(unstage (to_bin_string (triple int63 int32 char)))
 
     let encode (off, len, kind) = to_bin_string (off, Int32.of_int len, kind)
-    let decode_bin = Irmin.Type.(unstage (decode_bin (triple int64 int32 char)))
+    let decode_bin = Irmin.Type.(unstage (decode_bin (triple int63 int32 char)))
 
     let decode s off =
       let off, len, kind = snd (decode_bin s off) in

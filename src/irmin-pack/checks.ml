@@ -93,7 +93,12 @@ module Make (M : MAKER) = struct
       let generation = IO.generation io in
       let size = Bytes (IO.size io) in
       let version = IO.version io in
-      { size; offset; generation; version }
+      {
+        size;
+        offset = Int63.to_int64 offset;
+        generation = Int63.to_int64 generation;
+        version;
+      }
 
     let v ~root ~version =
       let pack = Layout.pack ~root |> io ~version in
